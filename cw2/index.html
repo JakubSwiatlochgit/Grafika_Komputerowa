@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <title>zad a</title>
+    <style>
+      body {
+        background-color: #dddddd;
+      }
+      canvas {
+        background-color: white;
+        display: block;
+      }
+      #canvasholder {
+        border: 2px solid black;
+        float: left;
+      }
+    </style>
+    <script>
+      "use strict";
+
+      var canvas;
+      var graphics;
+      var pixelSize;
+
+      function draw() {
+        graphics.clearRect(0, 0, 600, 600);
+        //rysunek 11
+
+        graphics.beginPath();
+        graphics.ellipse(300, 300, 200, 100, 0, 0, 2 * Math.PI);
+        graphics.stroke();
+
+        graphics.lineWidth = 3;
+        graphics.fillStyle = "#D16587";
+        graphics.fill();
+        graphics.strokeStyle = "black";
+        graphics.stroke();
+
+        graphics.lineWidth = 1;
+
+        //lewe oko
+        graphics.fillStyle = "white";
+        graphics.strokeStyle = "white";
+        graphics.fillCircle(250, 270, 15);
+        graphics.fillStyle = "black";
+        graphics.fillCircle(250, 270, 7);
+        graphics.fillStyle = "white";
+        graphics.strokeStyle = "white";
+        graphics.fillCircle(247, 267, 3);
+
+        //prawe oko
+        graphics.fillStyle = "white";
+        graphics.strokeStyle = "white";
+        graphics.fillCircle(350, 270, 15);
+        graphics.fillStyle = "black";
+        graphics.fillCircle(350, 270, 7);
+        graphics.fillStyle = "white";
+        graphics.strokeStyle = "white";
+        graphics.fillCircle(347, 267, 3);
+
+        //usta
+
+        graphics.beginPath();
+        graphics.moveTo(265, 345);
+
+        //dolna warga
+        graphics.bezierCurveTo(290, 390, 315, 390, 340, 345);
+        graphics.fillStyle = "black";
+        graphics.fill();
+
+        //gorna warga
+        graphics.beginPath();
+        graphics.moveTo(265, 345);
+        graphics.bezierCurveTo(290, 365, 315, 365, 340, 345);
+
+        graphics.fillStyle = "#D16587";
+        graphics.fill();
+
+        //kącik lewy gorny
+
+        graphics.beginPath();
+        graphics.moveTo(265, 345);
+        graphics.lineTo(263, 335);
+
+        graphics.strokeStyle = "black";
+        graphics.stroke();
+
+        //kącik lewy dolny
+        graphics.beginPath();
+        graphics.moveTo(265, 345);
+        graphics.lineTo(260, 355);
+
+        graphics.strokeStyle = "black";
+        graphics.stroke();
+
+        //kącik prawy gorny
+
+        graphics.beginPath();
+        graphics.moveTo(340, 345);
+        graphics.lineTo(345, 355);
+
+        graphics.strokeStyle = "black";
+        graphics.stroke();
+
+        //kącik prawy dolny
+        graphics.beginPath();
+        graphics.moveTo(340, 345);
+        graphics.lineTo(343, 337);
+
+        graphics.strokeStyle = "black";
+        graphics.stroke();
+
+        //zęby
+        graphics.beginPath();
+        graphics.fillStyle = "white";
+        graphics.fillRect(294, 360, 10, 10);
+
+        graphics.beginPath();
+        graphics.fillStyle = "white";
+        graphics.fillRect(305, 360, 10, 10);
+
+        // TODO: insert code to draw the image for Exercise 1!
+      }
+      function applyWindowToViewportTransformation(
+        left,
+        right,
+        bottom,
+        top,
+        preserveAspect
+      ) {
+        var displayAspect, windowAspect;
+        var excess;
+        var pixelwidth, pixelheight;
+        if (preserveAspect) {
+          displayAspect = Math.abs(canvas.height / canvas.width);
+          windowAspect = Math.abs((top - bottom) / (right - left));
+          if (displayAspect > windowAspect) {
+            excess = (top - bottom) * (displayAspect / windowAspect - 1);
+            top = top + excess / 2;
+            bottom = bottom - excess / 2;
+          } else if (displayAspect < windowAspect) {
+            excess = (right - left) * (windowAspect / displayAspect - 1);
+            right = right + excess / 2;
+            left = left - excess / 2;
+          }
+        }
+        graphics.scale(
+          canvas.width / (right - left),
+          canvas.height / (bottom - top)
+        );
+        graphics.translate(-left, -top);
+        pixelwidth = Math.abs((right - left) / canvas.width);
+        pixelheight = Math.abs((bottom - top) / canvas.height);
+        pixelSize = Math.max(pixelwidth, pixelheight);
+      }
+
+      function addGraphicsContextExtras(graphics) {
+        graphics.strokeLine = function (x1, y1, x2, y2) {
+          this.beginPath();
+          this.moveTo(x1, y1);
+          this.lineTo(x2, y2);
+          this.stroke();
+        };
+        graphics.fillCircle = function (x, y, r) {
+          this.beginPath();
+          this.arc(x, y, r, 0, 2 * Math.PI, false);
+          this.fill();
+        };
+        graphics.strokeCircle = function (x, y, radius) {
+          this.beginPath();
+          this.arc(x, y, radius, 0, 2 * Math.PI, false);
+          this.stroke();
+        };
+        graphics.fillPoly = function () {
+          if (arguments.length < 6) return;
+          this.beginPath();
+          this.moveTo(arguments[0], arguments[1]);
+          for (var i = 2; i + 1 < arguments.length; i = i + 2) {
+            this.lineTo(arguments[i], arguments[i + 1]);
+          }
+          this.closePath();
+          this.fill();
+        };
+        graphics.strokePoly = function () {
+          if (arguments.length < 4) return;
+          this.beginPath();
+          this.moveTo(arguments[0], arguments[1]);
+          for (var i = 2; i + 1 < arguments.length; i = i + 2) {
+            this.lineTo(arguments[i], arguments[i + 1]);
+          }
+          this.closePath();
+          this.stroke();
+        };
+        graphics.fillOval = function (x, y, horizontalRadius, verticalRadius) {
+          this.save();
+          this.translate(x, y);
+          this.scale(horizontalRadius, verticalRadius);
+          this.beginPath();
+          this.arc(0, 0, 1, 0, 2 * Math.PI, false);
+          this.restore();
+          this.fill();
+        };
+        graphics.strokeOval = function (
+          x,
+          y,
+          horizontalRadius,
+          verticalRadius
+        ) {
+          this.save();
+          this.translate(x, y);
+          this.scale(horizontalRadius, verticalRadius);
+          this.beginPath();
+          this.arc(0, 0, 1, 0, 2 * Math.PI, false);
+          this.restore();
+          this.stroke();
+        };
+        graphics.getRGB = function (x, y) {
+          var color = this.getImageData(x, y, 1, 1);
+          return color.data;
+        };
+      }
+
+      function init() {
+        try {
+          canvas = document.getElementById("canvas");
+          graphics = canvas.getContext("2d");
+        } catch (e) {
+          document.getElementById("canvasholder").innerHTML =
+            "Canvas graphics is not supported.<br>" +
+            "An error occurred while initializing graphics.";
+        }
+        addGraphicsContextExtras(graphics);
+        draw();
+      }
+    </script>
+    <style type="text/css"></style>
+    <style type="text/css" id="operaUserStyle"></style>
+  </head>
+
+  <body onload="init()">
+    <h2>zad a</h2>
+
+    <noscript>
+      <p>JavaScript is required to use this page.</p>
+    </noscript>
+
+    <div id="canvasholder">
+      <canvas id="canvas" width="600" height="600">
+        Canvas not supported.
+      </canvas>
+    </div>
+  </body>
+</html>

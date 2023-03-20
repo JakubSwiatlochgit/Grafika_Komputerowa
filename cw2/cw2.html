@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <title>CS424, Lab 2, Exercise 2</title>
+    <style>
+      canvas {
+        background-color: white;
+        display: block;
+      }
+      #canvasholder {
+        border: 2px solid black;
+        float: left;
+      }
+    </style>
+    <script>
+      "use strict";
+
+      var canvas;
+      var graphics;
+
+      function randomColorString() {
+        var r = Math.floor(256 * Math.random());
+        var g = Math.floor(256 * Math.random());
+        var b = Math.floor(256 * Math.random());
+        return "rgb(" + r + "," + g + "," + b + ")";
+      }
+
+      function installMouseHandler() {
+        var dragging = false;
+        var startX, startY;
+        var prevX, prevY;
+
+        var colorChoice;
+        function doMouseDown(evt) {
+          if (dragging) {
+            return;
+          }
+          if (evt.button != 0) {
+            return;
+          }
+          var x, y;
+          var r = canvas.getBoundingClientRect();
+          x = Math.round(evt.clientX - r.left);
+          y = Math.round(evt.clientY - r.top);
+          dragging = true;
+          if (dragging) {
+            startX = prevX = x;
+            startY = prevY = y;
+            document.addEventListener("mousemove", doMouseMove, false);
+            document.addEventListener("mouseup", doMouseUp, false);
+          }
+          colorChoice = Number(document.getElementById("colorChoice").value);
+          // TODO: Anything else to do when mouse is first pressed?
+        }
+
+        function doMouseMove(evt) {
+          if (!dragging) {
+            return;
+          }
+          var x, y;
+          var r = canvas.getBoundingClientRect();
+          x = Math.round(evt.clientX - r.left);
+          y = Math.round(evt.clientY - r.top);
+
+          /* TODO: Add support for more drawing tools. */
+
+          if (Math.abs(x - prevX) + Math.abs(y - prevY) < 3) {
+            return; // don't draw squares too close together
+          }
+
+          if (colorChoice == 0) {
+            graphics.fillStyle = randomColorString();
+          } else if (colorChoice == 1) {
+            graphics.fillStyle = "red";
+          } else if (colorChoice == 2) {
+            graphics.fillStyle = "green";
+          } else if (colorChoice == 3) {
+            graphics.fillStyle = "blue";
+          }
+          graphics.fillHexagon(x, y, 40);
+          graphics.strokeHexagon(x, y, 40);
+
+          /*------------------------------------------------------------*/
+
+          prevX = x; // update prevX,prevY to prepare for next call to doMouseMove
+          prevY = y;
+        }
+
+        function doMouseUp(evt) {
+          // This function is called when the user releases a mouse button during a drag.
+          if (!dragging) {
+            return; // (shouldn't be possible)
+          }
+          dragging = false;
+          document.removeEventListener("mousemove", doMouseMove, false);
+          document.removeEventListener("mouseup", doMouseMove, false);
+        }
+
+        canvas.addEventListener("mousedown", doMouseDown, false);
+      } // end installMouseHandler
+
+      function addGraphicsContextExtras(graphics) {
+        graphics.fillHexagon = function (x, y, r) {
+          var x0 = x;
+          var y0 = y;
+          this.beginPath();
+          this.moveTo(x0 + r, y0);
+          for (var i = 0; i < 15; i++) {
+            x = x0 + r * Math.cos((i * 2 * Math.PI) / 15);
+            y = y0 + r * Math.sin((i * 2 * Math.PI) / 15);
+            this.lineTo(x, y);
+          }
+          this.fill();
+        };
+
+        graphics.strokeHexagon = function (x, y, r) {
+          var x0 = x;
+          var y0 = y;
+          this.beginPath();
+          this.moveTo(x0 + r, y0);
+          for (var i = 0; i < 15; i++) {
+            x = x0 + r * Math.cos((i * 2 * Math.PI) / 15);
+            y = y0 + r * Math.sin((i * 2 * Math.PI) / 15);
+            this.lineTo(x, y);
+          }
+          this.stroke();
+        };
+
+        graphics.getRGB = function (x, y) {
+          var color = this.getImageData(x, y, 1, 1);
+          return color.data;
+        };
+      } // end of addGraphicsContextExtras()
+
+      function init() {
+        try {
+          canvas = document.getElementById("canvas");
+          graphics = canvas.getContext("2d");
+        } catch (e) {
+          document.getElementById("canvasholder").innerHTML =
+            "<p>Canvas graphics is not supported.<br>" +
+            "An error occurred while initializing graphics.</p>";
+          return;
+        }
+        addGraphicsContextExtras(graphics);
+        installMouseHandler();
+        graphics.fillStyle = "white";
+        graphics.fillRect(0, 0, canvas.width, canvas.height);
+      }
+    </script>
+    <style type="text/css"></style>
+    <style type="text/css" id="operaUserStyle"></style>
+  </head>
+  <body onload="init()">
+    <p>
+      <b>Color:</b>
+      <select id="colorChoice">
+        <option value="0">Random</option>
+        <option value="1">Red</option>
+        <option value="2">Green</option>
+        <option value="3">Blue</option>
+      </select>
+    </p>
+
+    <div id="canvasholder">
+      <canvas id="canvas" width="800" height="600">
+        Canvas not supported.
+      </canvas>
+    </div>
+  </body>
+</html>
